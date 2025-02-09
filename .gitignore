@@ -3,5 +3,7 @@
 .env
 *.db
 *.db.lock
-embeddings.txt
 data/*
+*.pth
+__pycache__
+.DS_Store
