@@ -3,6 +3,7 @@ import google.generativeai as genai
 import torch
 import sys
 import os
+import pandas as pd
 
 # necessary for the FlagEmbedding import to work
 SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -52,13 +53,17 @@ def get_image_embedding_cache():
 text_embedding_cache = get_text_embedding_cache()
 image_embedding_cache = get_image_embedding_cache()
 
-def emb_text(text: str, model: str = "models/text-embedding-004"):
-    if text in text_embedding_cache:
+def emb_text(text: str | pd.Series, model: str = "models/text-embedding-004"):
+    if type(text) == str and text in text_embedding_cache:
         return text_embedding_cache[text]
     embedding = genai.embed_content(
         model=model, content=text
     )["embedding"]
-    text_embedding_cache[text] = embedding
+    if type(text) != str:
+        for index, el in enumerate(embedding):
+            text_embedding_cache[text[index]] = el
+    else:
+        text_embedding_cache[text] = embedding
     return embedding
     
 

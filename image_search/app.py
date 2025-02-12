@@ -3,7 +3,7 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 
-from encoder import emb_text, emb_image, emb_image_text
+from encoder import emb_text, emb_image_text
 from milvus_utils import get_milvus_client, get_search_text_results, get_search_image_results
 from ask_llm import get_llm_answer
 import google.generativeai as genai
@@ -90,7 +90,7 @@ with st.form("my_form"):
         img_query_vector = emb_image_text(question)
         images_retrieved = get_search_image_results(milvus_client, IMAGE_COLLECTION_NAME, img_query_vector)
 
-        
+        # Final
         final_answer = f"Gemini: {answer}\n\nSimilar images:"
 
         st.chat_message("user").write(question)
