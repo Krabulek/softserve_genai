@@ -1,4 +1,4 @@
-# Mutlimodal RAG
+# Multimodal RAG
 
 ### Preparation
 
