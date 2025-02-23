@@ -2,7 +2,7 @@
 
 ### Preparation
 
-> Prerequisites: Python 3.12 or higher
+> Prerequisites: Python 3.9
 
 **1. Download Code and Visualized-BGE Model**
 ```bash

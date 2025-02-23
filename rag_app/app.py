@@ -4,10 +4,10 @@ import streamlit as st
 
 st.set_page_config(layout="wide")
 
+import google.generativeai as genai
 from encoder import emb_text, emb_image_text
 from milvus_utils import get_milvus_client, get_search_text_results, get_search_image_results
 from ask_llm import get_llm_answer
-import google.generativeai as genai
 
 from dotenv import load_dotenv
 
@@ -79,7 +79,7 @@ with st.form("my_form"):
             (
                 res["distance"],
                 res["entity"]["article_url"],
-                ast.literal_eval(res["entity"]["image_url"]),
+                ast.literal_eval(res["entity"]["image_url"]) if str(res["entity"]["image_url"]) != 'nan' else [],
                 res["entity"]["text"].replace(u'\u2019', u'\'')
             ) for res in search_res[0]
         ]
@@ -106,5 +106,6 @@ for idx, (distance, article_url, image_url, text) in enumerate(retrieved_lines_w
     st.sidebar.markdown(f"**Result {idx}** (*Distance: {distance:.2f}*)")
     st.sidebar.markdown(f"*Article: {article_url}*")
     st.sidebar.markdown(f"*Image: {' | '.join(image_url)}*")
-    st.sidebar.markdown(f"> {text[:min(len(text), 500)].replace('\n', ' ')}")
+    article = text[:min(len(text), 500)].replace(f'\n', ' ')
+    st.sidebar.markdown(f"> {article}")
 
