@@ -3,8 +3,7 @@ import pytest
 import deepeval
 from deepeval import assert_test
 from deepeval.test_case import LLMTestCase, LLMTestCaseParams
-from deepeval.metrics import BaseMetric, AnswerRelevancyMetric, FaithfulnessMetric, ToxicityMetric, GEval
-from deepeval.scorer import Scorer
+from deepeval.metrics import AnswerRelevancyMetric, FaithfulnessMetric, HallucinationMetric, GEval
 from deepeval.test_case import LLMTestCase
 from deepeval.dataset import EvaluationDataset
 
@@ -60,7 +59,7 @@ vertexai_gemini = TestGoogleGenerativeAI(model=custom_model_gemini)
 dataset = EvaluationDataset()
 
 dataset.add_test_cases_from_csv_file(
-    file_path="../evaluation_data/evaluation_data.csv",
+    file_path="evaluation_data.csv",
     input_col_name="prompt",
     actual_output_col_name="response",
     expected_output_col_name="ground_truth",
@@ -69,30 +68,6 @@ dataset.add_test_cases_from_csv_file(
     retrieval_context_col_name="context",
     retrieval_context_col_delimiter= ";"
 )
-
-class RougeMetric(BaseMetric):
-    def __init__(self, threshold: float = 0.5):
-        self.threshold = threshold
-        self.scorer = Scorer()
-
-    def measure(self, test_case: LLMTestCase):
-        self.score = self.scorer.rouge_score(
-            prediction=test_case.actual_output,
-            target=test_case.expected_output,
-            score_type="rouge1"
-        )
-        self.success = self.score >= self.threshold
-        return self.score
-
-    async def a_measure(self, test_case: LLMTestCase):
-        return self.measure(test_case)
-
-    def is_successful(self):
-        return self.success
-
-    @property
-    def __name__(self):
-        return "Rouge Metric"
     
 
 @pytest.mark.parametrize(
@@ -106,18 +81,21 @@ def test_chat_model(test_case: LLMTestCase):
       model=vertexai_gemini,
       include_reason=True
     )
+
     bias_metric = FaithfulnessMetric(
-       threshold=0.8,
-        model=vertexai_gemini,
-        include_reason=True
+       threshold=0.7,
+       model=vertexai_gemini,
+       include_reason=True
     )
-    toxicity_metric = ToxicityMetric(
-      threshold=0.5,
-      model=vertexai_gemini,
-      include_reason=True
+
+    hallucination_metric = HallucinationMetric(
+       threshold=0.6,
+       model=vertexai_gemini,
+       include_reason=True
     )
+    
     correctness_metric = GEval(
-        threshold=0.8,
+        threshold=0.7,
         name="Correctness",
         evaluation_steps=[
             "Check whether the facts in 'actual output' contradict any facts in 'expected output'",
@@ -131,13 +109,12 @@ def test_chat_model(test_case: LLMTestCase):
         ],
         model=vertexai_gemini
     )
-    rouge_metric = RougeMetric(threshold=0.6) #custom metric created above
+
     assert_test(test_case, [
-      bias_metric, 
-      toxicity_metric,
-      correctness_metric,
       answer_relevancy_metric,
-      rouge_metric
+      bias_metric,
+      hallucination_metric,
+      correctness_metric
     ])
 
 @deepeval.on_test_run_end

@@ -1,4 +1,10 @@
 import google.generativeai as genai
+from google.generativeai.types import GenerationConfig
+
+
+config = GenerationConfig(
+    temperature=0.2, top_k=32
+)
 
 
 def get_llm_answer(client: genai.GenerativeModel, context: str, question: str):
@@ -13,5 +19,5 @@ Provide an answer which is factually correct and based in the context.
 </question>`
 """
 
-    response = client.generate_content(USER_PROMPT)
+    response = client.generate_content(USER_PROMPT, generation_config=config)
     return response.text

@@ -45,7 +45,7 @@ def base_show_queries(annotated_dataset, metric_name, n, ascending):
             ascending = False
         sorted_annotated_dataset = annotated_dataset.sort_values(by=[metric_name], ascending=ascending)
         
-    return sorted_annotated_dataset[:n][["prompt", "response", metric_name]]
+    return sorted_annotated_dataset[:n][["prompt", "response", "ground_truth", metric_name]]
 
 
 def show_langkit_critical_queries(dataset, metric_name, n=3, ascending=None):
